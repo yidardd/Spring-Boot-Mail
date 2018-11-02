@@ -14,6 +14,7 @@ public class MainTest {
         System.out.println(5555);
         System.out.println(6666);
         System.out.println(777);
+        System.out.println(888);
 
     }
 
