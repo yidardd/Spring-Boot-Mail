@@ -1,3 +1,9 @@
+server:
+  #端口号
+  port: 8899
+  #项目名，如果不设定，默认是 /
+#  context-path: /spring-boot-mail
+
 spring:
   mail:
     host: smtp.163.com
@@ -5,3 +11,14 @@ spring:
     #   password指的是邮箱授权码,在设置中心即可找到对应的
     password: rdd123456
     default-encoding: utf-8
+
+redis:
+  task:
+    host: 127.0.0.1
+    port: 6379
+    pass: 87541092
+    db: 2
+    config:
+      maxTotal: 100
+      maxIdle: 10
+      maxWaitMillis : 100000

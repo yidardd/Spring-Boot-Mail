@@ -13,9 +13,8 @@ import org.thymeleaf.context.Context;
 /**
  * Created by 东东 on 2018/10/28.
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class MailSendTest {
+
+public class MailSendTest extends MainTest {
 
     @Autowired
     private MailService mailService;
