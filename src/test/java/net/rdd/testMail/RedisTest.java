@@ -1,18 +1,25 @@
 package net.rdd.testMail;
 
+import com.google.common.io.Files;
 import net.rdd.common.Person;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.core.AutoConfigureCache;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.ZSetOperations;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
-import java.io.Serializable;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by rdd on 2018/11/16.
@@ -26,7 +33,7 @@ public class RedisTest extends MainTest {
     private RedisTemplate taskRedisTemplate;
 
     @Test
-    public void test01(){
+    public void test01() {
 
         try {
 
@@ -36,21 +43,91 @@ public class RedisTest extends MainTest {
             final byte[] textByte = text.getBytes("UTF-8");
 //编码
             final String encodedText = encoder.encode(textByte);
-            taskRedisTemplate.opsForValue().set("EVALUATION|GOOD_EVALUATION|"+encodedText,"");
+            taskRedisTemplate.opsForValue().set("EVALUATION|GOOD_EVALUATION|" + encodedText, "");
 //解码
             System.out.println(new String(decoder.decodeBuffer(encodedText), "UTF-8"));
-        }catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }
 
     @Test
     public void test02() {
 
-        Person p = new Person();
-        p.setName("rdd");
-        p.setPass("123");
-        HashOperations hashOperations = taskRedisTemplate.opsForHash();
-        hashOperations.put("2", "3",p);
+        long bef = System.currentTimeMillis();
+        File banner = new File("C:\\Users\\My\\Desktop\\file\\20w2.txt");
+        List<String> list = null;
+        try {
+            list = Files.readLines(banner, Charset.defaultCharset());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        long aft = System.currentTimeMillis();
+        for (String  s:
+             list) {
+            taskRedisTemplate.opsForValue().set(s, s);
+        }
     }
+
+    @Test
+    public void test03() {
+
+        String redisKey = "SMS_LIMIT_32";
+        long count = taskRedisTemplate.opsForValue().increment(redisKey, 1);
+        long bef = System.currentTimeMillis();
+         count = taskRedisTemplate.opsForValue().increment(redisKey, 1);
+        long after = System.currentTimeMillis();
+
+        System.out.println("插入时间:"+(after-bef));
+
+        count = taskRedisTemplate.opsForValue().increment(redisKey, 1);
+
+        taskRedisTemplate.opsForValue().set("rdd:2131","rdd:2131");
+        taskRedisTemplate.opsForValue().set("rdd:2132321","rdd:2131");
+        taskRedisTemplate.opsForValue().set("rdd:2134321","rdd:2131");
+        taskRedisTemplate.opsForValue().set("rdd:2134321","rdd:2131");
+
+        if (count == 1) {
+            //设置有效期一分钟
+            taskRedisTemplate.expire(redisKey, 60, TimeUnit.SECONDS);
+        }
+        if (count > 1) {
+            System.out.println(1231);
+            return;
+        }
+
+    }
+
+    @Test
+    public void test04() {
+
+        Set<String> keys = taskRedisTemplate.keys("task.sync.group*");
+        Set<String>  keys1 = taskRedisTemplate.keys("task.sync.item*");
+        Set<String> keys2 = taskRedisTemplate.keys("task.sync.shop*");
+        for (String key:
+             keys) {
+            System.out.println("对应的:"+key);
+        }
+        taskRedisTemplate.delete(keys);
+        taskRedisTemplate.delete(keys1);
+        taskRedisTemplate.delete(keys2);
 
 
     }
+
+    @Test
+    public void test05(){
+        taskRedisTemplate.opsForValue().set("rdd:2131","rdd:2131",10,TimeUnit.SECONDS);
+        taskRedisTemplate.opsForValue().set("rdd:2132321","rdd:2131",10,TimeUnit.SECONDS);
+        taskRedisTemplate.opsForValue().set("rdd:2134fds321","rdd:2131",10,TimeUnit.SECONDS);
+        taskRedisTemplate.opsForValue().set("rdd:2134321","rdd:2131",10,TimeUnit.SECONDS);
+
+        Set<String> keys = taskRedisTemplate.keys("rdd:*");
+        for (String key:
+                keys) {
+            System.out.println("对应的:"+key);
+        }
+        Long delete = taskRedisTemplate.delete(keys);
+
+    }
+
+}
